@@ -40,20 +40,20 @@ def run():
     
     full_text = response.text
     
-    # Save the full text file (with marketing details and image prompts for Selar)
+    # Save full text with marketing metadata for Selar
     with open("generated_product_idea.txt", "w", encoding="utf-8") as f:
         f.write(full_text)
         
     with open(f"{archive_dir}/product_idea.txt", "w", encoding="utf-8") as f:
         f.write(full_text)
 
-    # Extract ONLY the clean e-book content
+    # Slice out only the e-book content
     if "[MARKETING_SECTION]" in full_text:
         ebook_content = full_text.split("[MARKETING_SECTION]")[0]
     else:
         ebook_content = full_text
 
-    # Build the PDF cleanly without any bot or generation metadata labels
+    # Build the PDF cleanly without headers or bot metadata
     pdf_filenames = ["product_guide.pdf", f"{archive_dir}/product_guide.pdf"]
     
     for pdf_filename in pdf_filenames:
@@ -71,9 +71,6 @@ def run():
         )
         
         story = []
-        
-        # We removed the title header and agent metadata lines entirely. 
-        # The PDF will now start directly with the AI-generated e-book content.
         
         for paragraph in ebook_content.split('\n\n'):
             cleaned = paragraph.replace('#', '').strip()
