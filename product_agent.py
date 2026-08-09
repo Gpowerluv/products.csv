@@ -17,7 +17,7 @@ def run():
     model = genai.GenerativeModel("gemini-3.5-flash")
     
     prompt = """
-    Write a complete, comprehensive, multi-chapter mini e-book guide for a digital product store. 
+    Write a complete, comprehensive, multi-chapter mini e-book guide for a digital product store, followed by marketing content. 
     You must write out every section fully without cutting off. 
     Include:
     1. A catchy e-book Title
@@ -30,7 +30,11 @@ def run():
     [MARKETING_SECTION]
     7. SELAR STORE DESCRIPTION (Persuasive sales copy for your landing page)
     8. SUGGESTED PRICE (In USD / NGN)
-    9. PRODUCT COVER IMAGE PROMPT (Provide a detailed, professional 3D visual design prompt that can be pasted into an AI image generator to create an eye-catching store cover graphic)
+    9. PRODUCT COVER IMAGE PROMPT (Detailed 3D visual design prompt for AI image generators)
+    10. SOCIAL MEDIA PROMOTIONAL POSTS (Provide 3 ready-to-use posts: 
+        - Post 1: A short, punchy Twitter/X thread hook & caption
+        - Post 2: An Instagram/Facebook engaging caption with emojis and call to action
+        - Post 3: A WhatsApp status broadcast copy to drive direct sales)
     """
     
     response = model.generate_content(
@@ -40,20 +44,20 @@ def run():
     
     full_text = response.text
     
-    # Save full text with marketing metadata for Selar
+    # Save the full text file (now contains your clean e-book, Selar description, image prompt, and social media posts)
     with open("generated_product_idea.txt", "w", encoding="utf-8") as f:
         f.write(full_text)
         
     with open(f"{archive_dir}/product_idea.txt", "w", encoding="utf-8") as f:
         f.write(full_text)
 
-    # Slice out only the e-book content
+    # Extract ONLY the clean e-book content for the PDF
     if "[MARKETING_SECTION]" in full_text:
         ebook_content = full_text.split("[MARKETING_SECTION]")[0]
     else:
         ebook_content = full_text
 
-    # Build the PDF cleanly without headers or bot metadata
+    # Build the clean PDF (no metadata headers, no prompts)
     pdf_filenames = ["product_guide.pdf", f"{archive_dir}/product_guide.pdf"]
     
     for pdf_filename in pdf_filenames:
@@ -71,7 +75,6 @@ def run():
         )
         
         story = []
-        
         for paragraph in ebook_content.split('\n\n'):
             cleaned = paragraph.replace('#', '').strip()
             if cleaned:
@@ -80,7 +83,7 @@ def run():
                 
         doc.build(story)
 
-    print(f"Clean product PDF successfully created and archived in {archive_dir}!")
+    print(f"Product, archive, and social media captions generated successfully in {archive_dir}!")
 
 if __name__ == "__main__":
     run()
