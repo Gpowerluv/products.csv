@@ -8,7 +8,7 @@ client = genai.Client(api_key=api_key)
 def run():
     # 1. Generate the product text blueprint using Flash
     text_model_response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.5-flash",
         contents="Create a high-demand digital product blueprint for a Selar store including a Product Title, Suggested Price, Store Description, and Social Media Caption."
     )
     
