@@ -20,7 +20,7 @@ def generate_profitable_product():
     6. INSTAGRAM & FACEBOOK PROMOTIONAL CAPTION (With strong hooks, emojis, and a clear call-to-action to buy via the store link):
     """
 
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    model = genai.GenerativeModel("gemini-3.5-flash")
     response = model.generate_content(prompt)
     
     product_blueprint = response.text
