@@ -35,3 +35,11 @@ jobs:
           git add generated_product_idea.txt
           git commit -m "Auto-researched and generated new product blueprint" || echo "No changes to commit"
           git push
+      - name: Commit and Push Product Blueprint Back to Repo
+        run: |
+          git config --global user.name "Selar Agent Bot"
+          git config --global user.email "bot@github.com"
+          git add generated_product_idea.txt product_guide.pdf
+          git commit -m "Auto-generated product blueprint and downloadable PDF" || echo "No changes to commit"
+          git push
+
