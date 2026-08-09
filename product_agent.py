@@ -1,6 +1,5 @@
 import os
 import google.generativeai as genai
-from google.generativeai import types
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
@@ -43,13 +42,8 @@ def generate_pdf_content(text_content):
     print("Full multi-chapter product PDF generated successfully!")
 
 def run():
-    model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
-        generation_config=types.GenerationConfig(
-            max_output_tokens=4000,  # Forces the model to write a long, complete guide
-            temperature=0.7,
-        )
-    )
+    # Use standard GenerativeModel instance
+    model = genai.GenerativeModel("gemini-2.5-flash")
     
     prompt = """
     Write a complete, comprehensive mini e-book/guide for a digital product store. 
@@ -63,6 +57,7 @@ def run():
     Make sure to write out all chapters fully without cutting off.
     """
     
+    # Generate content with extended length instruction in prompt
     response = model.generate_content(prompt)
     
     # 1. Save marketing text file
