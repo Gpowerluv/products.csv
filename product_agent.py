@@ -43,7 +43,7 @@ def generate_pdf_content(text_content):
 
 def run():
     # Use standard GenerativeModel instance
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    model = genai.GenerativeModel("gemini-3.5-flash")
     
     prompt = """
     Write a complete, comprehensive mini e-book/guide for a digital product store. 
