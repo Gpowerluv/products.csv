@@ -40,20 +40,20 @@ def run():
     
     full_text = response.text
     
-    # 1. Save the full text file (contains marketing copy, pricing, and image prompt for your Selar store setup)
+    # Save the full text file (with marketing details and image prompts for Selar)
     with open("generated_product_idea.txt", "w", encoding="utf-8") as f:
         f.write(full_text)
         
     with open(f"{archive_dir}/product_idea.txt", "w", encoding="utf-8") as f:
         f.write(full_text)
 
-    # 2. Extract ONLY the e-book content for the PDF (cuts off everything after [MARKETING_SECTION])
+    # Extract ONLY the clean e-book content
     if "[MARKETING_SECTION]" in full_text:
         ebook_content = full_text.split("[MARKETING_SECTION]")[0]
     else:
         ebook_content = full_text
 
-    # Build the PDF using ONLY the clean e-book content
+    # Build the PDF cleanly without any bot or generation metadata labels
     pdf_filenames = ["product_guide.pdf", f"{archive_dir}/product_guide.pdf"]
     
     for pdf_filename in pdf_filenames:
@@ -69,19 +69,11 @@ def run():
             leading=14,
             spaceAfter=10
         )
-        title_style = ParagraphStyle(
-            'TitleCustom',
-            parent=styles['Heading1'],
-            fontName='Helvetica-Bold',
-            fontSize=16,
-            leading=20,
-            spaceAfter=5
-        )
         
         story = []
-        story.append(Paragraph("Your Digital Product Guide", title_style))
-        story.append(Paragraph(f"Generated on {timestamp} by your GitHub Agent for Selar", normal_style))
-        story.append(Spacer(1, 10))
+        
+        # We removed the title header and agent metadata lines entirely. 
+        # The PDF will now start directly with the AI-generated e-book content.
         
         for paragraph in ebook_content.split('\n\n'):
             cleaned = paragraph.replace('#', '').strip()
@@ -91,7 +83,7 @@ def run():
                 
         doc.build(story)
 
-    print(f"Product successfully created and archived in {archive_dir}!")
+    print(f"Clean product PDF successfully created and archived in {archive_dir}!")
 
 if __name__ == "__main__":
     run()
