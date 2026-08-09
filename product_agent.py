@@ -17,7 +17,7 @@ def run():
     model = genai.GenerativeModel("gemini-3.5-flash")
     
     prompt = """
-    Write a complete, comprehensive, multi-chapter mini e-book guide for a digital product store, followed by marketing details. 
+    Write a complete, comprehensive, multi-chapter mini e-book guide for a digital product store. 
     You must write out every section fully without cutting off. 
     Include:
     1. A catchy e-book Title
@@ -26,6 +26,8 @@ def run():
     4. Chapter 2: The Core Framework and Product Creation
     5. Chapter 3: Launching, Pricing, and Automation
     6. Conclusion and Action Steps
+    
+    [MARKETING_SECTION]
     7. SELAR STORE DESCRIPTION (Persuasive sales copy for your landing page)
     8. SUGGESTED PRICE (In USD / NGN)
     9. PRODUCT COVER IMAGE PROMPT (Provide a detailed, professional 3D visual design prompt that can be pasted into an AI image generator to create an eye-catching store cover graphic)
@@ -36,14 +38,22 @@ def run():
         generation_config={"max_output_tokens": 8192}
     )
     
-    # Save marketing text file
+    full_text = response.text
+    
+    # 1. Save the full text file (contains marketing copy, pricing, and image prompt for your Selar store setup)
     with open("generated_product_idea.txt", "w", encoding="utf-8") as f:
-        f.write(response.text)
+        f.write(full_text)
         
     with open(f"{archive_dir}/product_idea.txt", "w", encoding="utf-8") as f:
-        f.write(response.text)
+        f.write(full_text)
 
-    # Build PDF safely using Python's built-in html.escape function
+    # 2. Extract ONLY the e-book content for the PDF (cuts off everything after [MARKETING_SECTION])
+    if "[MARKETING_SECTION]" in full_text:
+        ebook_content = full_text.split("[MARKETING_SECTION]")[0]
+    else:
+        ebook_content = full_text
+
+    # Build the PDF using ONLY the clean e-book content
     pdf_filenames = ["product_guide.pdf", f"{archive_dir}/product_guide.pdf"]
     
     for pdf_filename in pdf_filenames:
@@ -73,10 +83,9 @@ def run():
         story.append(Paragraph(f"Generated on {timestamp} by your GitHub Agent for Selar", normal_style))
         story.append(Spacer(1, 10))
         
-        for paragraph in response.text.split('\n\n'):
+        for paragraph in ebook_content.split('\n\n'):
             cleaned = paragraph.replace('#', '').strip()
             if cleaned:
-                # Safely escape text using Python's built-in html library
                 safe_text = html.escape(cleaned)
                 story.append(Paragraph(safe_text, normal_style))
                 
