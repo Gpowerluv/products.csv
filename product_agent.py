@@ -1,72 +1,81 @@
 import os
 import google.generativeai as genai
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 api_key = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
 def generate_pdf_content(text_content):
-    """Compiles the full AI text blueprint into a clean, downloadable PDF product file."""
+    """Compiles the full multi-chapter AI text into a multi-page PDF guide."""
     pdf_filename = "product_guide.pdf"
-    c = canvas.Canvas(pdf_filename, pagesize=letter)
-    width, height = letter
+    doc = SimpleDocTemplate(pdf_filename, pagesize=letter,
+                            rightMargin=54, leftMargin=54,
+                            topMargin=54, bottomMargin=54)
     
-    # Title & Header
-    c.setFont("Helvetica-Bold", 18)
-    c.drawString(54, height - 54, "Your Digital Product Guide")
+    styles = getSampleStyleSheet()
+    normal_style = ParagraphStyle(
+        'BodyTextCustom',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=10,
+        leading=14,
+        spaceAfter=10
+    )
     
-    c.setFont("Helvetica", 10)
-    c.drawString(54, height - 72, "Generated autonomously by your GitHub Agent for Selar")
+    title_style = ParagraphStyle(
+        'TitleCustom',
+        parent=styles['Heading1'],
+        fontName='Helvetica-Bold',
+        fontSize=16,
+        leading=20,
+        spaceAfter=5
+    )
     
-    # Divider line
-    c.setStrokeColorRGB(0.2, 0.2, 0.2)
-    c.line(54, height - 82, width - 54, height - 82)
+    story = []
+    story.append(Paragraph("Your Digital Product Guide", title_style))
+    story.append(Paragraph("Generated autonomously by your GitHub Agent for Selar", normal_style))
+    story.append(Spacer(1, 10))
     
-    # Body text formatting (word wrapping line by line)
-    c.setFont("Helvetica", 10)
-    text_object = c.beginText(54, height - 105)
-    text_object.setLeading(14)
-    
-    for line in text_content.split('\n'):
-        clean_line = line.replace('#', '').strip()
-        if len(clean_line) > 90:
-            chunks = [clean_line[i:i+90] for i in range(0, len(clean_line), 90)]
-            for chunk in chunks:
-                text_object.textLine(chunk)
-        else:
-            text_object.textLine(clean_line if clean_line else " ")
+    # Split the AI text into paragraphs and add them to the document flow
+    for paragraph in text_content.split('\n\n'):
+        cleaned = paragraph.replace('#', '').strip()
+        if cleaned:
+            story.append(Paragraph(cleaned, normal_style))
             
-    c.drawText(text_object)
-    c.save()
-    print("Full multi-chapter product PDF generated successfully!")
+    doc.build(story)
+    print("Multi-page PDF generated successfully!")
 
 def run():
-    # Use standard GenerativeModel instance
     model = genai.GenerativeModel("gemini-3.5-flash")
     
+    # Strict prompt forcing all chapters to be fully written out
     prompt = """
-    Write a complete, comprehensive mini e-book/guide for a digital product store. 
-    You must include:
+    Write a complete, comprehensive, multi-chapter mini e-book guide for a digital product store. 
+    You must write out every section fully without summarizing or cutting off. 
+    Include:
     1. A catchy e-book Title
-    2. An Introduction
-    3. Chapter 1: The Foundation
-    4. Chapter 2: The Core Framework & Execution
-    5. Chapter 3: Launching & Scaling
-    6. A Conclusion
-    Make sure to write out all chapters fully without cutting off.
+    2. Introduction
+    3. Chapter 1: The Foundation and Niche Research
+    4. Chapter 2: The Core Framework and Product Creation
+    5. Chapter 3: Launching, Pricing, and Automation
+    6. Conclusion and Action Steps
     """
     
-    # Generate content with extended length instruction in prompt
-    response = model.generate_content(prompt)
+    # Requesting a large response size to prevent truncation
+    response = model.generate_content(
+        prompt,
+        generation_config={"max_output_tokens": 8192}
+    )
     
-    # 1. Save marketing text file
+    # 1. Save text file
     with open("generated_product_idea.txt", "w", encoding="utf-8") as f:
         f.write(response.text)
         
-    # 2. Build the full multi-chapter PDF file
+    # 2. Build the full multi-page PDF
     generate_pdf_content(response.text)
-    print("Product blueprint and full PDF generated successfully!")
+    print("Full product package generated successfully!")
 
 if __name__ == "__main__":
     run()
