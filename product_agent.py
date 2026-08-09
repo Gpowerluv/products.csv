@@ -4,15 +4,13 @@ import google.generativeai as genai
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.utils import escape
 
 api_key = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
 def run():
-    # Create a unique timestamp for this product run (e.g., 2026-08-09_13-20)
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
-    
-    # Create an archive directory if it doesn't exist
     archive_dir = f"archive/product_{timestamp}"
     os.makedirs(archive_dir, exist_ok=True)
 
@@ -38,14 +36,14 @@ def run():
         generation_config={"max_output_tokens": 8192}
     )
     
-    # 1. Save latest text file (for easy quick-access) AND save a copy in the archive folder
+    # Save marketing text file
     with open("generated_product_idea.txt", "w", encoding="utf-8") as f:
         f.write(response.text)
         
     with open(f"{archive_dir}/product_idea.txt", "w", encoding="utf-8") as f:
         f.write(response.text)
 
-    # 2. Build the PDF for latest access AND save a copy in the archive folder
+    # Build PDF safely with text escaping to prevent XML/markup syntax crashes
     pdf_filenames = ["product_guide.pdf", f"{archive_dir}/product_guide.pdf"]
     
     for pdf_filename in pdf_filenames:
@@ -78,7 +76,9 @@ def run():
         for paragraph in response.text.split('\n\n'):
             cleaned = paragraph.replace('#', '').strip()
             if cleaned:
-                story.append(Paragraph(cleaned, normal_style))
+                # Safely escape text to avoid ReportLab syntax crashes on symbols like < or >
+                safe_text = escape(cleaned)
+                story.append(Paragraph(safe_text, normal_style))
                 
         doc.build(story)
 
