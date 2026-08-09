@@ -33,13 +33,5 @@ jobs:
           git config --global user.name "Selar Agent Bot"
           git config --global user.email "bot@github.com"
           git add generated_product_idea.txt
-          git commit -m "Auto-researched and generated new product blueprint & visuals" || echo "No changes to commit"
+          git commit -m "Auto-researched and generated new product blueprint" || echo "No changes to commit"
           git push
-      - name: Commit and Push Product Blueprint Back to Repo
-        run: |
-          git config --global user.name "Selar Agent Bot"
-          git config --global user.email "bot@github.com"
-          git add generated_product_idea.txt product_cover.png
-          git commit -m "Auto-generated product blueprint and cover image" || echo "No changes to commit"
-          git push
-
