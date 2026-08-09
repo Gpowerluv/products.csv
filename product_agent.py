@@ -1,10 +1,10 @@
 import os
 import datetime
+import html
 import google.generativeai as genai
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.utils import escape
 
 api_key = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
@@ -43,7 +43,7 @@ def run():
     with open(f"{archive_dir}/product_idea.txt", "w", encoding="utf-8") as f:
         f.write(response.text)
 
-    # Build PDF safely with text escaping to prevent XML/markup syntax crashes
+    # Build PDF safely using Python's built-in html.escape function
     pdf_filenames = ["product_guide.pdf", f"{archive_dir}/product_guide.pdf"]
     
     for pdf_filename in pdf_filenames:
@@ -76,8 +76,8 @@ def run():
         for paragraph in response.text.split('\n\n'):
             cleaned = paragraph.replace('#', '').strip()
             if cleaned:
-                # Safely escape text to avoid ReportLab syntax crashes on symbols like < or >
-                safe_text = escape(cleaned)
+                # Safely escape text using Python's built-in html library
+                safe_text = html.escape(cleaned)
                 story.append(Paragraph(safe_text, normal_style))
                 
         doc.build(story)
