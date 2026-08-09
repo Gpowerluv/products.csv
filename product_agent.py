@@ -38,7 +38,6 @@ def generate_pdf_content(text_content):
     story.append(Paragraph("Generated autonomously by your GitHub Agent for Selar", normal_style))
     story.append(Spacer(1, 10))
     
-    # Split the AI text into paragraphs and add them to the document flow
     for paragraph in text_content.split('\n\n'):
         cleaned = paragraph.replace('#', '').strip()
         if cleaned:
@@ -50,10 +49,9 @@ def generate_pdf_content(text_content):
 def run():
     model = genai.GenerativeModel("gemini-3.5-flash")
     
-    # Strict prompt forcing all chapters to be fully written out
     prompt = """
-    Write a complete, comprehensive, multi-chapter mini e-book guide for a digital product store. 
-    You must write out every section fully without summarizing or cutting off. 
+    Write a complete, comprehensive, multi-chapter mini e-book guide for a digital product store, followed by marketing details. 
+    You must write out every section fully without cutting off. 
     Include:
     1. A catchy e-book Title
     2. Introduction
@@ -61,21 +59,22 @@ def run():
     4. Chapter 2: The Core Framework and Product Creation
     5. Chapter 3: Launching, Pricing, and Automation
     6. Conclusion and Action Steps
+    7. SELAR STORE DESCRIPTION (Persuasive sales copy for your landing page)
+    8. SUGGESTED PRICE (In USD / NGN)
+    9. PRODUCT COVER IMAGE PROMPT (Provide a detailed, professional 3D visual design prompt that can be pasted into an AI image generator to create an eye-catching store cover graphic)
     """
     
-    # Requesting a large response size to prevent truncation
     response = model.generate_content(
         prompt,
         generation_config={"max_output_tokens": 8192}
     )
     
-    # 1. Save text file
+    # Save the full text file including the new cover image prompt section
     with open("generated_product_idea.txt", "w", encoding="utf-8") as f:
         f.write(response.text)
         
-    # 2. Build the full multi-page PDF
     generate_pdf_content(response.text)
-    print("Full product package generated successfully!")
+    print("Full product package and image prompt generated successfully!")
 
 if __name__ == "__main__":
     run()
