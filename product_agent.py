@@ -1,4 +1,5 @@
 import os
+import datetime
 import google.generativeai as genai
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -7,46 +8,14 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 api_key = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
-def generate_pdf_content(text_content):
-    """Compiles the full multi-chapter AI text into a multi-page PDF guide."""
-    pdf_filename = "product_guide.pdf"
-    doc = SimpleDocTemplate(pdf_filename, pagesize=letter,
-                            rightMargin=54, leftMargin=54,
-                            topMargin=54, bottomMargin=54)
-    
-    styles = getSampleStyleSheet()
-    normal_style = ParagraphStyle(
-        'BodyTextCustom',
-        parent=styles['Normal'],
-        fontName='Helvetica',
-        fontSize=10,
-        leading=14,
-        spaceAfter=10
-    )
-    
-    title_style = ParagraphStyle(
-        'TitleCustom',
-        parent=styles['Heading1'],
-        fontName='Helvetica-Bold',
-        fontSize=16,
-        leading=20,
-        spaceAfter=5
-    )
-    
-    story = []
-    story.append(Paragraph("Your Digital Product Guide", title_style))
-    story.append(Paragraph("Generated autonomously by your GitHub Agent for Selar", normal_style))
-    story.append(Spacer(1, 10))
-    
-    for paragraph in text_content.split('\n\n'):
-        cleaned = paragraph.replace('#', '').strip()
-        if cleaned:
-            story.append(Paragraph(cleaned, normal_style))
-            
-    doc.build(story)
-    print("Multi-page PDF generated successfully!")
-
 def run():
+    # Create a unique timestamp for this product run (e.g., 2026-08-09_13-20)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
+    
+    # Create an archive directory if it doesn't exist
+    archive_dir = f"archive/product_{timestamp}"
+    os.makedirs(archive_dir, exist_ok=True)
+
     model = genai.GenerativeModel("gemini-3.5-flash")
     
     prompt = """
@@ -69,12 +38,51 @@ def run():
         generation_config={"max_output_tokens": 8192}
     )
     
-    # Save the full text file including the new cover image prompt section
+    # 1. Save latest text file (for easy quick-access) AND save a copy in the archive folder
     with open("generated_product_idea.txt", "w", encoding="utf-8") as f:
         f.write(response.text)
         
-    generate_pdf_content(response.text)
-    print("Full product package and image prompt generated successfully!")
+    with open(f"{archive_dir}/product_idea.txt", "w", encoding="utf-8") as f:
+        f.write(response.text)
+
+    # 2. Build the PDF for latest access AND save a copy in the archive folder
+    pdf_filenames = ["product_guide.pdf", f"{archive_dir}/product_guide.pdf"]
+    
+    for pdf_filename in pdf_filenames:
+        doc = SimpleDocTemplate(pdf_filename, pagesize=letter,
+                                rightMargin=54, leftMargin=54,
+                                topMargin=54, bottomMargin=54)
+        styles = getSampleStyleSheet()
+        normal_style = ParagraphStyle(
+            'BodyTextCustom',
+            parent=styles['Normal'],
+            fontName='Helvetica',
+            fontSize=10,
+            leading=14,
+            spaceAfter=10
+        )
+        title_style = ParagraphStyle(
+            'TitleCustom',
+            parent=styles['Heading1'],
+            fontName='Helvetica-Bold',
+            fontSize=16,
+            leading=20,
+            spaceAfter=5
+        )
+        
+        story = []
+        story.append(Paragraph("Your Digital Product Guide", title_style))
+        story.append(Paragraph(f"Generated on {timestamp} by your GitHub Agent for Selar", normal_style))
+        story.append(Spacer(1, 10))
+        
+        for paragraph in response.text.split('\n\n'):
+            cleaned = paragraph.replace('#', '').strip()
+            if cleaned:
+                story.append(Paragraph(cleaned, normal_style))
+                
+        doc.build(story)
+
+    print(f"Product successfully created and archived in {archive_dir}!")
 
 if __name__ == "__main__":
     run()
