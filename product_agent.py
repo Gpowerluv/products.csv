@@ -5,7 +5,8 @@ api_key = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
 def run():
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.5-flash")
+
     prompt = "Create a high-demand digital product blueprint for a Selar store, including product title, target audience, contents, and Facebook ad copy."
     response = model.generate_content(prompt)
     
